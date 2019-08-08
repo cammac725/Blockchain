@@ -1,6 +1,3 @@
-# Paste your version of blockchain.py from the basic_block_gp
-# folder here
-
 
 import hashlib
 import json
@@ -158,16 +155,16 @@ blockchain = Blockchain()
 @app.route('/mine', methods=['POST'])
 def mine():
 
-    block_string = json.dumps(blockchain.last_block, sort_keys=True).encode()
+    # proof = blockchain.proof_of_work()
 
+    last_block_string = json.dumps(blockchain.last_block, sort_keys=True).encode()
+    
     values = request.get_json()
-    if 'proof' not in values:
-        return 'No proof found', 400
+    submitted_proof = values['proof']
 
-    if not blockchain.valid_proof(block_string, values['proof']):
-        return f"Rejected. Proof {values['proof']} is not valid."
+    if blockchain.valid_proof(last_block_string, submitted_proof):
 
-    if blockchain.valid_proof(block_string, values['proof']):
+        print(f"Miner submitted valid proof!: {submitted_proof}")
     
         # We must receive a reward for finding the proof.
         # The sender is "0" to signify that this node has mine a new coin
@@ -177,7 +174,7 @@ def mine():
 
         # Forge the new Block by adding it to the chain
         last_block_hash = blockchain.hash(blockchain.last_block)
-        block = blockchain.new_block(proof, last_block_hash)
+        block = blockchain.new_block(submitted_proof, last_block_hash)
 
 
         # Send a response with the new block
@@ -187,6 +184,12 @@ def mine():
             'transactions': block['transactions'],
             'proof': block['proof'],
             'previous_hash': block['previous_hash'],
+        }
+        return jsonify(response), 200
+
+    else:
+        response = {
+            'message': "Proof was invalid or already subbmitted"
         }
         return jsonify(response), 200
 
@@ -227,10 +230,11 @@ def chain_validity():
     return jsonify(response), 200
 
 
-@app.route('/last-proof', methods=['GET'])
-def last_proof():
+@app.route('/last_block', methods=['GET'])
+def last_block():
+
     response = {
-        "last_proof": blockchain.last_block['proof']
+        "last_block": blockchain.last_block
     }
     return jsonify(response), 200
 

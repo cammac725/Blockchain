@@ -1,3 +1,6 @@
+# to restart the flask server on file change use FLASK_APP=blockchain.py FLASK_DEBUG=1 python -m flask run in the basic_block_gp folder while in a virtualenv shell
+
+
 import hashlib
 import json
 from time import time
@@ -101,6 +104,7 @@ class Blockchain(object):
 
 
     def valid_chain(self, chain):
+        # TODO: Check invalid chain
         """
         Determine if a given blockchain is valid
 
@@ -108,21 +112,31 @@ class Blockchain(object):
         :return: <bool> True if valid, False if not
         """
 
-        last_block = chain[0]
+        prev_block = chain[0]
         current_index = 1
 
         while current_index < len(chain):
             block = chain[current_index]
-            print(f'{last_block}')
+            print(f'{prev_block}')
             print(f'{block}')
             print("\n-------------------\n")
             # Check that the hash of the block is correct
             # TODO: Return false if hash isn't correct
+            if block['previous_hash'] != self.hash(prev_block):
+                # self_hash = self.hash(last_block)
+                # previous_hash = block['previous_hash']
+                # print(f'Comparing hashes: {previous_hash} : {self_hash}')
+                return False
 
             # Check that the Proof of Work is correct
             # TODO: Return false if proof isn't correct
+            block_string = json.dumps(prev_block, sort_keys=True).encode()
+            if not self.valid_proof(block_string, block['proof']):
+                # breakpoint()
+                print('Found invalid proof')
+                return False
 
-            last_block = block
+            prev_block = block
             current_index += 1
 
         return True
@@ -142,7 +156,6 @@ blockchain = Blockchain()
 def mine():
     # We run the proof of work algorithm to get the next proof...
     proof = blockchain.proof_of_work()
-
     print(f'Found valid proof: {proof}')
 
     # We must receive a reward for finding the proof.
@@ -150,7 +163,6 @@ def mine():
     # The sender is "0" to signify that this node has mine a new coin
     # The recipient is the current node, it did the mining!
     # The amount is 1 coin as a reward for mining the next block
-
     blockchain.new_transaction(0, node_identifier, 1)
 
     # Forge the new Block by adding it to the chain
@@ -193,6 +205,14 @@ def full_chain():
         # TODO: Return the chain and its current length
         'chain': blockchain.chain,
         'length': len(blockchain.chain)
+    }
+    return jsonify(response), 200
+
+
+@app.route('/chain_validity', methods=['GET'])
+def chain_validity():
+    response = {
+        "valid_chain": blockchain.valid_chain(blockchain.chain)
     }
     return jsonify(response), 200
 

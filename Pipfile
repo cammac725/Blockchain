@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 flake8 = "*"
+black = "*"
 
 [packages]
 requests = "==2.22.0"
@@ -13,3 +14,6 @@ urllib3 = "==1.25.3"
 
 [requires]
 python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true

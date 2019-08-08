@@ -1,7 +1,4 @@
 {
-    "workbench.colorCustomizations": {
-        "activityBar.background": "#2B2F1F",
-        "titleBar.activeBackground": "#3D422B",
-        "titleBar.activeForeground": "#FBFCFA"
-    }
+    "python.pythonPath": "/home/cam/.local/share/virtualenvs/Blockchain-8jQQnDAf/bin/python",
+    "python.formatting.provider": "black"
 }
